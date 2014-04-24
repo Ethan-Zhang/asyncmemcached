@@ -15,7 +15,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import logging
 from threading import Condition
+
 from connection import Connection
 
 class ConnectionPool(object):
@@ -75,7 +77,8 @@ class ConnectionPool(object):
             self._connections += 1
         finally:
             self._condition.release()
-            print 'con get', self._connections
+            logging.debug('get connection connections %d cached %d'
+                        % (self._connections, len(self._idle_cache)))
 
         return con
 
@@ -97,8 +100,9 @@ class ConnectionPool(object):
         finally:
             self._connections -= 1
             self._condition.release()
-            print 'con release', self._connections
-    
+            logging.debug('release connection connections %d cached %d'
+                        % (self._connections, len(self._idle_cache)))
+
     def close(self):
         """Close all connections in the pool."""
         self._condition.acquire()

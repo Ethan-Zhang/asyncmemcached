@@ -50,14 +50,24 @@ class Connection(object):
             raise ConnectionError(e)
 
     def disconect(self):
-        self._stream.close()
+        callback = self._final_callback
+        self._final_callback = None
+        try:
+            if callback:
+                callback(None)
+        finally:
+            self._stream._close_callback = None
+            self._stream.close()
 
     def on_disconnect(self):
-        self._pool.release(self)
-        if self._final_callback:
-            self._final_callback(None)
-            logging.warning('connection closed.')
-            self._final_callback = None
+        callback = self._final_callback
+        self._final_callback = None
+        try:
+            if callback:
+                callback(None)
+        finally:
+            logging.debug('asyncmemcached closing connection')
+            self._pool.release(self)
 
     def send_command(self, fullcmd, expect_str, callback):
         self._final_callback = callback
@@ -88,15 +98,21 @@ class Connection(object):
             length = int(length)
             self._stream.read_bytes(length+2, self._expect_value_callback)
         elif response.isdigit():
-            self._pool.release(self)
-            if self._final_callback:
-                self._final_callback(int(response))
+            try:
+                callback = self._final_callback
                 self._final_callback = None
+                if callback:
+                    callback(int(response))
+            finally:
+                self._pool.release(self)
         else:
-            self._pool.release(self)
-            if self._final_callback:
-                self._final_callback(None)
+            try:
+                callback = self._final_callback
                 self._final_callback = None
+                if callback:
+                    callback(None)
+            finally:
+                self._pool.release(self)
 
     def _expect_value_callback(self, value):
         
@@ -109,20 +125,26 @@ class Connection(object):
         response = response.rstrip('\r\n')
 
         if response == 'END':
-            if self._final_callback:
-                self._final_callback(value)
+            try:
+                callback = self._final_callback
                 self._final_callback = None
+                if callback:
+                    callback(value)
+            finally:
+                self._pool.release(self)
         else:
             raise RedisError('error %s' % response)
 
     def _expect_callback(self, expect_str, response):
-        self._pool.release(self)
         response = response.rstrip('\r\n')
-
         if response == expect_str:
-            if self._final_callback:
-                self._final_callback(None)
+            try:
+                callback = self._final_callback
                 self._final_callback = None
+                if callback:
+                    callback(None)
+            finally:
+                self._pool.release(self)
         else:
             raise RedisError('error %s' % response)
 
@@ -132,6 +154,10 @@ class Connection(object):
             yield
         except Exception as e:
             logging.warning("uncaught exception", exc_info=True)
-            if self._final_callback:
-                self._final_callback(None)
+            try:
+                callback = self._final_callback
                 self._final_callback = None
+                if callback:
+                    callback(None)
+            finally:
+                self._pool.release(self)
