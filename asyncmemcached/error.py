@@ -22,5 +22,8 @@ class Error(StandardError):
 class ConnectionError(Error):
     pass
 
+class TooManyConnections(ConnectionError):
+    pass
+
 class RedisError(Error):
     pass

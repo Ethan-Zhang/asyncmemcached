@@ -57,36 +57,32 @@ class Client(object):
     def add(self, key, value, flag=0, expired=0, callback=None):
 
         con = self._pool.get_connection()
-        cmd = 'add %s %s %s %s\r\n%s' % (key, flag, expired, len(value), value)
+        cmd = 'add %s %s %s %s\r\n%s\r\n' % (key, flag, expired, len(value), value)
         con.send_command(cmd, 'STORED', callback)
 
     def replace(self, key, value, flag=0, expired=0, callback=None):
 
         con = self._pool.get_connection()
-        cmd = 'replace %s %s %s %s\r\n%s' % (key, flag, expired, len(value), value)
+        cmd = 'replace %s %s %s %s\r\n%s\r\n' % (key, flag, expired, len(value), value)
         con.send_command(cmd, 'STORED', callback)
 
     def set(self, key, value, flag=0, expired=0, callback=None):
 
         con = self._pool.get_connection()
-        cmd = 'set %s %s %s %s\r\n%s' % (key, flag, expired, len(value), value)
+        cmd = 'set %s %s %s %s\r\n%s\r\n' % (key, flag, expired, len(value), value)
         con.send_command(cmd, 'STORED', callback)
 
     def incr(self, key, delta=1, callback=None):
         con = self._pool.get_connection()
-        cmd = 'incr %s %s' % (key, delta)
+        cmd = 'incr %s %s\r\n' % (key, delta)
         con.send_command(cmd, '', callback)
 
     def decr(self, key, delta=1, callback=None):
 
         con = self._pool.get_connection()
-        cmd = 'decr %s %s' % (key, delta)
+        cmd = 'decr %s %s\r\n' % (key, delta)
         con.send_command(cmd, '', callback)
 
-    def _incr_callback(self, connection, callback):
-        
-        connection.read_value(callback)
-        
     def delete(self, key, callback=None):
 
         con = self._pool.get_connection()

@@ -69,11 +69,7 @@ class ConnectionPool(object):
                 raise TooManyConnections("%d connections are already equal to the max: %d" % (self._connections, self._maxconnections))
             # connection limit not reached, get a dedicated connection
             try: # first try to get it from the idle cache
-                while True:
-                    con = self._idle_cache.pop(0)
-                    if not con.closed():
-                        break
-                print 'con cache'
+                con = self._idle_cache.pop(0)
             except IndexError: # else get a fresh connection
                 con = self.make_connection()
             self._connections += 1

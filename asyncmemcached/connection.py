@@ -53,6 +53,7 @@ class Connection(object):
         self._stream.close()
 
     def on_disconnect(self):
+        self._pool.release(self)
         if self._final_callback:
             self._final_callback(None)
             logging.warning('connection closed.')
@@ -60,7 +61,8 @@ class Connection(object):
 
     def send_command(self, fullcmd, expect_str, callback):
         self._final_callback = callback
-        fullcmd = fullcmd + '\r\n'
+        if self._stream.closed():
+            self.connect()
         with stack_context.StackContext(self.cleanup):
             if fullcmd[0:3] == 'get' or \
                     fullcmd[0:4] == 'incr' or \
@@ -78,7 +80,6 @@ class Connection(object):
         self._stream.read_until('\r\n', self._expect_value_header_callback)
 
     def _expect_value_header_callback(self, response):
-
         response = response[:-2]
 
         if response[:5] == 'VALUE':
