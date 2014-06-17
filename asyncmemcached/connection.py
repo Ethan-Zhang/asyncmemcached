@@ -121,7 +121,6 @@ class Connection(object):
                 functools.partial(self._end_value_callback, value))
 
     def _end_value_callback(self, value, response):
-        self._pool.release(self)
         response = response.rstrip('\r\n')
 
         if response == 'END':
