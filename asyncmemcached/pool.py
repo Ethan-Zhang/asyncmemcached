@@ -90,7 +90,9 @@ class ConnectionPool(object):
             self._condition.release()
             return
         try:
-            if not self._maxcached or len(self._idle_cache) < self._maxcached:
+            if con.closed():
+                logging.debug('dropping closed connection.')
+            elif not self._maxcached or len(self._idle_cache) < self._maxcached:
                 # the idle cache is not full, so put it there
                 self._idle_cache.append(con)
             else: # if the idle cache is already full,

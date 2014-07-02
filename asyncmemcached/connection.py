@@ -69,6 +69,9 @@ class Connection(object):
             logging.debug('asyncmemcached closing connection')
             self._pool.release(self)
 
+    def closed(self):
+        return self._stream.closed()
+
     def send_command(self, fullcmd, expect_str, callback):
         self._final_callback = callback
         if self._stream.closed():
