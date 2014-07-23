@@ -57,19 +57,19 @@ class Client(object):
     def add(self, key, value, flag=0, expired=0, callback=None):
 
         con = self._pool.get_connection()
-        cmd = 'add %s %s %s %s\r\n%s\r\n' % (key, flag, expired, len(value), value)
+        cmd = 'add %s %d %d %d\r\n%s\r\n' % (key, flag, expired, len(value), value)
         con.send_command(cmd, 'STORED', callback)
 
     def replace(self, key, value, flag=0, expired=0, callback=None):
 
         con = self._pool.get_connection()
-        cmd = 'replace %s %s %s %s\r\n%s\r\n' % (key, flag, expired, len(value), value)
+        cmd = 'replace %s %d %d %d\r\n%s\r\n' % (key, flag, expired, len(value), value)
         con.send_command(cmd, 'STORED', callback)
 
     def set(self, key, value, flag=0, expired=0, callback=None):
 
         con = self._pool.get_connection()
-        cmd = 'set %s %s %s %s\r\n%s\r\n' % (key, flag, expired, len(value), value)
+        cmd = 'set %s %d %d %d\r\n%s\r\n' % (key, flag, expired, len(value), value)
         con.send_command(cmd, 'STORED', callback)
 
     def incr(self, key, delta=1, callback=None):
